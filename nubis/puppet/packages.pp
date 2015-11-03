@@ -5,12 +5,6 @@ package { 'percona-release':
   ensure => 'installed',
   source => 'https://www.percona.com/redir/downloads/percona-release/redhat/latest/percona-release-0.1-3.noarch.rpm',
   provider => 'rpm'
-}->
-yumrepo { 'percona-release-noarch':
-  enabled => 1,
-}->
-yumrepo { "percona-release-${architecture}":
-  enabled => 1,
 }
 
 # Epel
@@ -22,6 +16,18 @@ yumrepo { 'epel':
 }
 
 # Packages
-package { "mysql56":
+package { [
+  "mysql56",
+  "mysql56-server",
+  ]:
   ensure => latest,
+}
+
+package {"percona-xtrabackup":
+  ensure => latest,
+  require => [
+    Yumrepo['epel'],
+    Package['percona-release'],
+    Package['mysql56-server'],
+  ],
 }
