@@ -1,0 +1,100 @@
+#!/bin/bash
+
+export PATH=/usr/local/bin:$PATH
+
+echo "Preparing Filesystem..."
+blkid /dev/xvdb || mkfs.ext4 -L MySQL-Prod /dev/xvdb
+
+echo "Mounting Filesystem..."
+mount -onoatime /dev/xvdb /var/lib/mysql
+
+SERVER_ID=$(ec2-metadata --local-ipv4 | cut -d: -f2| sed -e's/[ \.]//g')
+
+echo "Generating my.cnf (server-id: $SERVER_ID)..."
+cat << EOF > /etc/my.cnf
+[mysqld]
+# Disabling symbolic-links is recommended to prevent assorted security risks
+symbolic-links=0
+
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+read_only=OFF
+
+expire_logs_days=4
+server-id=$SERVER_ID
+log-bin=/var/lib/mysql/aws-bin
+log_slave_updates
+relay-log=/var/lib/mysql/aws-relay-bin
+relay-log-index=/var/lib/mysql/aws-relay-bin.index
+
+
+master_info_repository=TABLE
+                                                                                                                                                                                                                                   
+binlog_format=MIXED                                                                                                                                                                                                                
+                                                                                                                                                                                                                                   
+skip-external-locking                                                                                                                                                                                                              
+character_set_server=utf8                                                                                                                                                                                                          
+default_storage_engine=InnoDB                                                                                                                                                                                                      
+                                                                                                                                                                                                                                   
+# bugzilla needs this; nothing else should use it                                                                                                                                                                                  
+ft_min_word_len=2                                                                                                                                                                                                                  
+                                                                                                                                                                                                                                   
+                                                                                                                                                                                                                                   
+
+
+key_buffer_size=512M
+sort_buffer_size=256K
+join_buffer_size=8M
+net_buffer_length=32K
+preload_buffer_size=2M
+max_allowed_packet=32M
+max_connections=4800
+
+wait_timeout=600
+interactive_timeout=600
+thread_cache_size=500
+query_cache_size=0
+query_cache_type=0
+table_open_cache=3072
+read_buffer_size=8M
+sync-binlog=1
+
+# IP-based auth so the DB doesn't go down when DNS does.
+skip-name-resolve
+
+# Here you can see queries with especially long duration
+log_output = FILE
+# note: do not use "ON" here - it fails silently
+slow_query_log = 1
+slow_query_log_file        = /var/log/mysql-slow.log
+long_query_time=2
+
+innodb_buffer_pool_size=24G
+innodb_log_file_size=300M
+innodb_log_buffer_size=50M
+innodb_lock_wait_timeout=50
+innodb_file_per_table
+
+innodb_flush_log_at_trx_commit=2
+
+read_rnd_buffer_size=4M
+tmp_table_size=32M
+
+innodb_buffer_pool_dump_at_shutdown=TRUE
+innodb_buffer_pool_load_at_startup=TRUE
+
+[mysql.server]
+user=mysql
+
+[mysqld_safe]
+log-error=/var/log/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid
+
+EOF
+
+echo "Starting MySQL..."
+service mysqld start
+
+echo "Securing MySQL..."
+# Disable remote root, test DBs and anonymous users
+( echo ""; echo "n"; echo "y"; echo "y" ; echo "y" ) | mysql_secure_installation
