@@ -1,4 +1,4 @@
-file { '/etc/nubis.d/00-mysql-bootstrap":
+file { '/etc/nubis.d/00-mysql-bootstrap':
     ensure  => file,
     owner   => root,
     group   => root,

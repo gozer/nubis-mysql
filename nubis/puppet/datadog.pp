@@ -6,5 +6,6 @@ class { 'datadog_agent':
 class { 'datadog_agent::integrations::mysql' :
  host        => 'localhost',
  user        => 'root',
+ password    => '',
  replication => 1,
 }
