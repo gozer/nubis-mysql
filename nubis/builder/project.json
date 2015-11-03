@@ -1,13 +1,14 @@
 {
   "variables": {
+    "ami_regions": "",
     "automatic_version_bump": "1",
     "automatic_version_verify": "1",
     "builders": [
       "amazon-ebs-amazon-linux"
     ],
-    "project_description": "nubis MySQL"
-    "project_name": "nubis-mysql"
-    "project_version": "0.1",
+    "project_description": "nubis MySQL",
+    "project_name": "nubis-mysql",
+    "project_version": "0.5",
     "source_ami_project_name": "nubis-base"
   }
 }
