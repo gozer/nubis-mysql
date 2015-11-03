@@ -7,10 +7,10 @@ package { 'percona-release':
   provider => 'rpm'
 }->
 yumrepo { 'percona-release-noarch':
-  enabled => true,
+  enabled => 1,
 }->
 yumrepo { "percona-release-${architecture}":
-  enabled => true,
+  enabled => 1,
 }
 
 # Epel
@@ -18,7 +18,7 @@ package { 'epel-release':
   ensure => present,
 }->
 yumrepo { 'epel':
-  enabled => true,
+  enabled => 1,
 }
 
 # Packages
