@@ -1,12 +1,14 @@
 #!/bin/bash
 
-export PATH=/usr/local/bin:$PATH
+export PATH=/usr/local/bin:/opt/aws/bin:$PATH
 
 echo "Preparing Filesystem..."
 blkid /dev/xvdb || mkfs.ext4 -L MySQL-Prod /dev/xvdb
+blkid /dev/xvdc || mkfs.ext4 -L MySQL-Prod-Backup /dev/xvdc
 
 echo "Mounting Filesystem..."
 mount -onoatime /dev/xvdb /var/lib/mysql
+mount -onoatime /dev/xvdc /mnt
 
 SERVER_ID=$(ec2-metadata --local-ipv4 | cut -d: -f2| sed -e's/[ \.]//g')
 
