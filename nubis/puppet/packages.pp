@@ -38,7 +38,10 @@ package { "mysql-mmm":
   ],
 }
 
-package {"percona-xtrabackup":
+package { [
+  "percona-xtrabackup",
+  "percona-toolkit",
+  ]:
   ensure => latest,
   require => [
     Yumrepo['epel'],
