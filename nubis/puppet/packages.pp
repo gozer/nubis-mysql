@@ -26,6 +26,7 @@ package { [
 package { [
   "perl-App-cpanminus",
   "perl-Test-Simple",
+  "dstat",
   ]:
   ensure => latest,
 }
