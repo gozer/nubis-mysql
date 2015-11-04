@@ -23,6 +23,13 @@ package { [
   ensure => latest,
 }
 
+package { [
+  "perl-App-cpanminus",
+  "perl-Test-Simple",
+  ]:
+  ensure => latest,
+}
+
 package {"percona-xtrabackup":
   ensure => latest,
   require => [
