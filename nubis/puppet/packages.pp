@@ -31,13 +31,6 @@ package { [
   ensure => latest,
 }
 
-package { "mysql-mmm":
-  ensure => latest,
-  require => [
-    Yumrepo['epel'],
-  ],
-}
-
 package { [
   "percona-xtrabackup",
   "percona-toolkit",
