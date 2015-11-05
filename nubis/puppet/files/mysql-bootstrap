@@ -139,7 +139,7 @@ fi
 
 if [ -f /var/lib/mysql/nubis/root.my.cnf ]; then
   echo "Creating root .my.cnf..."
-  ln -sf /var/lib/mysql/nubis/root.my.cnf .my.cnf
+  ln -sf /var/lib/mysql/nubis/root.my.cnf /root/.my.cnf
 fi
 
 if [ -f /var/lib/mysql/nubis/AUTO_START ]; then
