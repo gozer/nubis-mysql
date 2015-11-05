@@ -54,7 +54,6 @@ symbolic-links=0
 
 datadir=/var/lib/mysql
 socket=/var/lib/mysql/mysql.sock
-read_only=OFF
 
 expire_logs_days=4
 server-id=$SERVER_ID
