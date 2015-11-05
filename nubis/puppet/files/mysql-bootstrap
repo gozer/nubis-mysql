@@ -1,18 +1,52 @@
 #!/bin/bash
 
+
 export PATH=/usr/local/bin:/opt/aws/bin:$PATH
 
-echo "Preparing Filesystem..."
-blkid /dev/xvdb || mkfs.ext4 -L MySQL-Prod /dev/xvdb
-blkid /dev/xvdc || mkfs.ext4 -L MySQL-Prod-Backup /dev/xvdc
+# Parse user-data
+eval `curl -fq http://169.254.169.254/latest/user-data`
 
-echo "Mounting Filesystem..."
-mount -onoatime /dev/xvdb /var/lib/mysql
-mount -onoatime /dev/xvdc /mnt
+set -x
+
+DISCOVERY_TAG="${NUBIS_PROJECT}-${NUBIS_ENVIRONMENT}"
+
+REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq '.region' -r)
+AZ=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq '.availabilityZone' -r)
+INSTANCE_ID=$(curl -s -fq http://169.254.169.254/latest/meta-data/instance-id)
+
+export AWS_DEFAULT_REGION=$REGION
+
+VOLUME_ID=$(aws ec2 describe-volumes --filters Name=tag:ServiceName,Values="$DISCOVERY_TAG" Name=availability-zone,Values="$AZ" | jq -r .Volumes[0].VolumeId)
+
+echo "Finding our volume... $VOLUME_ID"
+
+aws ec2 attach-volume --volume-id "$VOLUME_ID" --instance-id "$INSTANCE_ID" --device /dev/xvdb
+
+echo "Attaching our volume..."
+
+VOLUME_STATUS=$(aws ec2 describe-volumes --volume-id "$VOLUME_ID" | jq -r .Volumes[0].State)
+
+while [ "$VOLUME_STATUS" != "in-use" ]; do
+  sleep 2;
+  VOLUME_STATUS=$(aws ec2 describe-volumes --volume-id "$VOLUME_ID" | jq -r .Volumes[0].State)
+done
+
+echo "Volume status: $VOLUME_STATUS"
+
+echo "Waiting for volume to be discovered..."
+while [ ! -e /dev/xvdb ]; do sleep 1; done
+
+echo "Mounting our volume..."
+blkid /dev/xvdb || mkfs.ext4 /dev/xvdb -L $DISCOVERY_TAG
+mount /dev/xvdb -onoatime /var/lib/mysql
+rm -rf /var/lib/mysql/lost+found
 
 SERVER_ID=$(ec2-metadata --local-ipv4 | cut -d: -f2| sed -e's/[ \.]//g')
 
 echo "Generating my.cnf (server-id: $SERVER_ID)..."
+
+# XXX: Grab my.cnf from the volume...
+
 cat << EOF > /etc/my.cnf
 [mysqld]
 # Disabling symbolic-links is recommended to prevent assorted security risks
@@ -29,8 +63,9 @@ log_slave_updates
 relay-log=/var/lib/mysql/aws-relay-bin
 relay-log-index=/var/lib/mysql/aws-relay-bin.index
 
-
+relay-log-info-repository=TABLE
 master_info_repository=TABLE
+relay_log_recovery=1
                                                                                                                                                                                                                                    
 binlog_format=MIXED                                                                                                                                                                                                                
                                                                                                                                                                                                                                    
@@ -61,9 +96,6 @@ table_open_cache=3072
 read_buffer_size=8M
 sync-binlog=1
 
-# IP-based auth so the DB doesn't go down when DNS does.
-skip-name-resolve
-
 # Here you can see queries with especially long duration
 log_output = FILE
 # note: do not use "ON" here - it fails silently
@@ -87,6 +119,7 @@ innodb_buffer_pool_load_at_startup=TRUE
 
 [mysql.server]
 user=mysql
+ignore-db-dirs=lost+found,nubis
 
 [mysqld_safe]
 log-error=/var/log/mysqld.log
@@ -94,9 +127,37 @@ pid-file=/var/run/mysqld/mysqld.pid
 
 EOF
 
-echo "Starting MySQL..."
-service mysqld start
+if [ -f /var/lib/mysql/nubis/MASTER ]; then
+  echo "Making /etc/hosts entries for our master..."
+  cat /var/lib/mysql/nubis/MASTER >> /etc/hosts
+fi
 
-echo "Securing MySQL..."
-# Disable remote root, test DBs and anonymous users
-( echo ""; echo "n"; echo "y"; echo "y" ; echo "y" ) | mysql_secure_installation
+if [ -f /var/lib/mysql/nubis/my.cnf ]; then
+  echo "Found existing my.cnf, linking..."
+  ln -sf /var/lib/mysql/nubis/my.cnf /etc/my.cnf
+fi
+
+if [ -f /var/lib/mysql/nubis/root.my.cnf ]; then
+  echo "Creating root .my.cnf..."
+  ln -sf /var/lib/mysql/nubis/root.my.cnf .my.cnf
+fi
+
+if [ -f /var/lib/mysql/nubis/AUTO_START ]; then
+  echo "Starting MySQL..."
+  touch /var/log/mysql-slow.log
+  chown mysql:mysql /var/log/mysql-slow.log
+  service mysqld start
+fi
+
+if [ -f /var/lib/mysql/nubis/svc-mysql.json ]; then
+  echo "Installing MySQL Consul service..."
+  ln -sf /var/lib/mysql/nubis/svc-mysql.json /etc/consul/svc-mysql.json
+  echo "Reloading Consul..."
+  service consul reload
+fi
+
+if [ -f /var/lib/mysql/nubis/mysql.yaml ]; then
+  echo "Installing DataDog service for MySQL..."
+  ln -sf /var/lib/mysql/nubis/mysql.yaml /etc/dd-agent/conf.d/mysql.yaml
+  service datadog-agent restart
+fi
