@@ -30,6 +30,12 @@
       "Description": "The id of the ami for this region",
       "Type": "String"
     },
+    "ConsulToken": {
+      "Description": "Optionnal ACL Token for Consul",
+      "Type": "String",
+      "Default": "anonymous",
+      "NoEcho": "true"
+    },
     "StacksVersion": {
       "Description": "Version of the Nubis Stacks",
       "Type": "String",
@@ -446,6 +452,9 @@
           },
           "AmiId": {
             "Ref": "AmiId"
+          },
+          "ConsulToken": {
+            "Ref": "ConsulToken"
           },
           "SSHKeyName": {
             "Ref": "SSHKeyName"
