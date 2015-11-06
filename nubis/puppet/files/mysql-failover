@@ -9,9 +9,17 @@ else
   exit 1
 fi
 
-MYSQL_READ_ONLY="ON"
+if [ ! -r /var/lib/mysql/nubis/MASTER ]; then
+  echo "We are the MySQL primary master, so we care"
+else
+  echo "We are not the MySQL primary master, so we don't care"
+  exit 0
+fi
+
 if [ "$MYSQL_ACTIVE" == "1" ]; then
   MYSQL_READ_ONLY="OFF"
+else
+  MYSQL_READ_ONLY="ON"
 fi
 
 echo "Setting MySQL readonly status to : $MYSQL_READ_ONLY"
