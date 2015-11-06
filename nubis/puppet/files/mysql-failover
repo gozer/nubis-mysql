@@ -1,0 +1,21 @@
+#!/bin/bash
+
+SETTINGS=/etc/nubis-config/active.sh
+
+if [ -r $SETTINGS ]; then
+  . $SETTINGS
+else
+  echo "Couldn't read settings from $SETTINGS"
+  exit 1
+fi
+
+MYSQL_READ_ONLY="ON"
+if [ "$MYSQL_ACTIVE" == "1" ]; then
+  MYSQL_READ_ONLY="OFF"
+fi
+
+echo "Setting MySQL readonly status to : $MYSQL_READ_ONLY"
+
+mysql -e "set GLOBAL read_only=$MYSQL_READ_ONLY"
+
+exit 0

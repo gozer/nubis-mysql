@@ -1,0 +1,2 @@
+# Set to 1 to indicate MySQL is active and not passive
+MYSQL_ACTIVE="{{ if exists "/config/Active" }}{{ getv "/config/Active" }}{{ else }}0{{ end }}"

@@ -1,0 +1,14 @@
+[template]
+src = "mysql-active.tmpl"
+dest = "/etc/nubis-config/active.sh"
+prefix = "/%%STACK%%/%%ENVIRONMENT%%"
+
+uid = 0
+gid = 0
+mode = "0644"
+
+keys = [
+    "/config"
+]
+
+reload_cmd = "/usr/local/bin/mysql-failover"
