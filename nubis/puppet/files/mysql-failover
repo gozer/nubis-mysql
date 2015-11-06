@@ -9,7 +9,7 @@ else
   exit 1
 fi
 
-if [ ! -r /var/lib/mysql/nubis/MASTER ]; then
+if [ -r /var/lib/mysql/nubis/MASTER ]; then
   echo "We are the MySQL primary master, so we care"
 else
   echo "We are not the MySQL primary master, so we don't care"
