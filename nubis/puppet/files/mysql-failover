@@ -17,5 +17,3 @@ fi
 echo "Setting MySQL readonly status to : $MYSQL_READ_ONLY"
 
 mysql -e "set GLOBAL read_only=$MYSQL_READ_ONLY"
-
-exit 0
