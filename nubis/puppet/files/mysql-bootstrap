@@ -158,3 +158,10 @@ if [ -f /var/lib/mysql/nubis/mysql.yaml ]; then
   ln -sf /var/lib/mysql/nubis/mysql.yaml /etc/dd-agent/conf.d/mysql.yaml
   service datadog-agent restart
 fi
+
+if [ -f /var/lib/mysql/nubis/ENI ]; then
+  ENI=$(cat /var/lib/mysql/nubis/ENI)
+  ENI_IP=$(aws ec2 describe-network-interfaces --network-interface-id $(ENI) | jq -r .NetworkInterfaces[0].PrivateIpAddress)
+  echo "Attaching ENI $ENI($ENI_IP) ..."
+  aws ec2 attach-network-interface --network-interface-id "$ENI" --instance-id "$INSTANCE_ID" --device-index 1
+fi
