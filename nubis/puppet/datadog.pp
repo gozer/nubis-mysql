@@ -7,7 +7,7 @@ class { 'datadog_agent::integrations::process':
   processes   => [
       {
           'name'          => 'mysqld',
-          'search_string' => ['/usr/libexec/mysql56/mysqld'],
+          'search_string' => ['mysqld'],
           'exact_match'   => true,
       },
   ],
