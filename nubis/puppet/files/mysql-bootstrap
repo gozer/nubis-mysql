@@ -41,7 +41,16 @@ rm -rf /var/lib/mysql/lost+found
 
 SERVER_ID=$(ec2-metadata --local-ipv4 | cut -d: -f2| sed -e's/[ \.]//g')
 
-echo "Generating my.cnf (server-id: $SERVER_ID)..."
+REPORT_HOST=$(curl -s -fq http://169.254.169.254/latest/meta-data/local-ipv4)
+if [ -f /var/lib/mysql/nubis/ENI ]; then
+  ENI=$(cat /var/lib/mysql/nubis/ENI)
+  ENI_IP=$(aws ec2 describe-network-interfaces --network-interface-id "$ENI" | jq -r .NetworkInterfaces[0].PrivateIpAddress)
+  REPORT_HOST=$ENI_IP
+  echo "Attaching ENI $ENI($ENI_IP) ..."
+  aws ec2 attach-network-interface --network-interface-id "$ENI" --instance-id "$INSTANCE_ID" --device-index 1
+fi
+
+echo "Generating my.cnf (server-id: $SERVER_ID) (report-host: $REPORT_HOST)..."
 
 if [ -r /var/lib/mysql/nubis/server.key ]; then
   SSL="
@@ -63,6 +72,7 @@ socket=/var/lib/mysql/mysql.sock
 
 expire_logs_days=4
 server-id=$SERVER_ID
+report_host=$REPORT_HOST
 log-bin=/var/lib/mysql/aws-bin
 log_slave_updates
 relay-log=/var/lib/mysql/aws-relay-bin
@@ -169,11 +179,5 @@ if [ -f /var/lib/mysql/nubis/mysql.yaml ]; then
   service datadog-agent restart
 fi
 
-if [ -f /var/lib/mysql/nubis/ENI ]; then
-  ENI=$(cat /var/lib/mysql/nubis/ENI)
-  ENI_IP=$(aws ec2 describe-network-interfaces --network-interface-id "$ENI" | jq -r .NetworkInterfaces[0].PrivateIpAddress)
-  echo "Attaching ENI $ENI($ENI_IP) ..."
-  aws ec2 attach-network-interface --network-interface-id "$ENI" --instance-id "$INSTANCE_ID" --device-index 1
-fi
 
 exit
