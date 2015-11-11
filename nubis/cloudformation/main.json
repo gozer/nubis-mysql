@@ -210,6 +210,21 @@
         }
       }
     },
+    "MySqlSCL3Ingress": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Fn::GetAtt": [
+            "MySqlSecurityGroup",
+            "GroupId"
+          ]
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "3306",
+        "ToPort": "3306",
+        "CidrIp": "10.22.70.0/24"
+      }
+    },
     "MySqlSshIngress": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
