@@ -43,6 +43,14 @@ SERVER_ID=$(ec2-metadata --local-ipv4 | cut -d: -f2| sed -e's/[ \.]//g')
 
 echo "Generating my.cnf (server-id: $SERVER_ID)..."
 
+if [ -r /var/lib/mysql/nubis/server.key ]; then
+  SSL="
+ssl-ca=/var/lib/mysql/nubis/ca.crt
+ssl-cert=/var/lib/mysql/nubis/server.crt
+ssl-key=/var/lib/mysql/nubis/server.key
+"
+fi
+
 # XXX: Grab my.cnf from the volume...
 
 cat << EOF > /etc/my.cnf
@@ -114,6 +122,8 @@ tmp_table_size=32M
 innodb_buffer_pool_dump_at_shutdown=TRUE
 innodb_buffer_pool_load_at_startup=TRUE
 
+$SSL
+
 [mysql.server]
 user=mysql
 ignore-db-dirs=lost+found,nubis
@@ -161,7 +171,9 @@ fi
 
 if [ -f /var/lib/mysql/nubis/ENI ]; then
   ENI=$(cat /var/lib/mysql/nubis/ENI)
-  ENI_IP=$(aws ec2 describe-network-interfaces --network-interface-id $(ENI) | jq -r .NetworkInterfaces[0].PrivateIpAddress)
+  ENI_IP=$(aws ec2 describe-network-interfaces --network-interface-id "$ENI" | jq -r .NetworkInterfaces[0].PrivateIpAddress)
   echo "Attaching ENI $ENI($ENI_IP) ..."
   aws ec2 attach-network-interface --network-interface-id "$ENI" --instance-id "$INSTANCE_ID" --device-index 1
 fi
+
+exit
