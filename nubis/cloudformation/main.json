@@ -311,11 +311,17 @@
     "Type" : "AWS::EC2::NetworkInterface",
      "Properties" : {
         "Description" : "MySQL Server VIP",
-        "SubnetId" : "String",
+        "GroupSet" : [{
+            "Ref": "MySqlSecurityGroup"
+          }],
+        "SubnetId" : { "Fn::GetAtt": [
+              "VpcInfo",
+              "PrivateSubnetAZ1"
+            ] },
         "Tags": [
           {
             "Key": "Name",
-            "Value": "MySQL Volume"
+            "Value": "MySQL Server VIP"
           },
           {
             "Key": "ServiceName",
