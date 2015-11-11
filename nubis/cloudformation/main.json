@@ -254,7 +254,25 @@
         "Path": "/",
         "Policies": [
           {
-            "PolicyName": "EC2VolumeAccess",
+            "PolicyName": "MySQL-EC2-ENI",
+            "PolicyDocument": {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ec2:AttachNetworkInterface",
+                "ec2:DescribeNetworkInterfaces"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}
+          },
+          {
+            "PolicyName": "MySQL-EC2-VolumeAccess",
             "PolicyDocument": {
               "Version": "2012-10-17",
               "Statement": [
