@@ -85,7 +85,8 @@
         "StackName": {
           "Fn::Join": [
             "-",
-            [ "bugzilla",
+            [
+              "bugzilla",
               {
                 "Ref": "Environment"
               }
@@ -256,20 +257,20 @@
           {
             "PolicyName": "MySQL-EC2-ENI",
             "PolicyDocument": {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "ec2:AttachNetworkInterface",
-                "ec2:DescribeNetworkInterfaces"
-            ],
-            "Resource": [
-                "*"
-            ]
-        }
-    ]
-}
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:AttachNetworkInterface",
+                    "ec2:DescribeNetworkInterfaces"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                }
+              ]
+            }
           },
           {
             "PolicyName": "MySQL-EC2-VolumeAccess",
@@ -326,16 +327,20 @@
       }
     },
     "AZ1ENI": {
-    "Type" : "AWS::EC2::NetworkInterface",
-     "Properties" : {
-        "Description" : "MySQL Server VIP",
-        "GroupSet" : [{
+      "Type": "AWS::EC2::NetworkInterface",
+      "Properties": {
+        "Description": "MySQL Server VIP",
+        "GroupSet": [
+          {
             "Ref": "MySqlSecurityGroup"
-          }],
-        "SubnetId" : { "Fn::GetAtt": [
-              "VpcInfo",
-              "PrivateSubnetAZ1"
-            ] },
+          }
+        ],
+        "SubnetId": {
+          "Fn::GetAtt": [
+            "VpcInfo",
+            "PrivateSubnetAZ1"
+          ]
+        },
         "Tags": [
           {
             "Key": "Name",
@@ -364,7 +369,7 @@
             "Value": "MySQL Server VIP"
           }
         ]
-     }
+      }
     },
     "AZ1EBSVolume": {
       "Type": "AWS::EC2::Volume",
