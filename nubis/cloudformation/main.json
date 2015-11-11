@@ -307,19 +307,16 @@
         ]
       }
     },
-    "AZ1EBSVolume": {
-      "Type": "AWS::EC2::Volume",
-      "Properties": {
-        "AvailabilityZone": {
-          "Fn::GetAtt": [
-            "VpcInfo",
-            "PrivateAvailabilityZone1"
-          ]
-        },
-        "Encrypted": "false",
-        "Size": "512",
-        "VolumeType": "gp2",
+    "AZ1ENI": {
+    "Type" : "AWS::EC2::NetworkInterface",
+     "Properties" : {
+        "Description" : "MySQL Server VIP",
+        "SubnetId" : "String",
         "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MySQL Volume"
+          },
           {
             "Key": "ServiceName",
             "Value": {
@@ -340,7 +337,49 @@
           },
           {
             "Key": "Purpose",
-            "Value": "MySql Server EBS Volume"
+            "Value": "MySQL Server VIP"
+          }
+        ]
+     }
+    },
+    "AZ1EBSVolume": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": {
+          "Fn::GetAtt": [
+            "VpcInfo",
+            "PrivateAvailabilityZone1"
+          ]
+        },
+        "Encrypted": "false",
+        "Size": "512",
+        "VolumeType": "gp2",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "MySQL Volume"
+          },
+          {
+            "Key": "ServiceName",
+            "Value": {
+              "Ref": "ServiceName"
+            }
+          },
+          {
+            "Key": "TechnicalOwner",
+            "Value": {
+              "Ref": "TechnicalOwner"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Purpose",
+            "Value": "MySQL Server"
           }
         ]
       }
@@ -359,6 +398,10 @@
         "VolumeType": "gp2",
         "Tags": [
           {
+            "Key": "Name",
+            "Value": "MySQL Volume"
+          },
+          {
             "Key": "ServiceName",
             "Value": {
               "Ref": "ServiceName"
@@ -378,7 +421,7 @@
           },
           {
             "Key": "Purpose",
-            "Value": "MySql Server EBS Volume"
+            "Value": "MySQL Server"
           }
         ]
       }
@@ -397,6 +440,10 @@
         "VolumeType": "gp2",
         "Tags": [
           {
+            "Key": "Name",
+            "Value": "MySQL Volume"
+          },
+          {
             "Key": "ServiceName",
             "Value": {
               "Ref": "ServiceName"
@@ -416,7 +463,7 @@
           },
           {
             "Key": "Purpose",
-            "Value": "MySql Server EBS Volume"
+            "Value": "MySQL Server"
           }
         ]
       }
