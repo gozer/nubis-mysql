@@ -52,6 +52,16 @@ fi
 
 echo "Generating my.cnf (server-id: $SERVER_ID) (report-host: $REPORT_HOST)..."
 
+MYSQL_ACTIVE="0"
+if [ -r /etc/nubis-config/active.sh ]; then
+  . /etc/nubis-config/active.sh
+fi
+
+READ_ONLY="ON"
+if [ "$MYSQL_ACTIVE" == "1" ]; then
+  READ_ONLY="OFF"
+fi
+
 if [ -r /var/lib/mysql/nubis/server.key ]; then
   SSL="
 ssl-ca=/var/lib/mysql/nubis/ca.crt
@@ -66,6 +76,8 @@ cat << EOF > /etc/my.cnf
 [mysqld]
 # Disabling symbolic-links is recommended to prevent assorted security risks
 symbolic-links=0
+
+read_only=$READ_ONLY
 
 datadir=/var/lib/mysql
 socket=/var/lib/mysql/mysql.sock
