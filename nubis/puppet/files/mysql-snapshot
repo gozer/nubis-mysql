@@ -1,0 +1,25 @@
+#!/bin/bash
+
+export PATH=/usr/local/bin:/opt/aws/bin:$PATH
+
+# Parse user-data
+eval "$(curl -fsq http://169.254.169.254/latest/user-data)"
+
+REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq '.region' -r)
+AZ=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq '.availabilityZone' -r)
+
+export AWS_DEFAULT_REGION=$REGION
+
+VOLUME_ID=$(aws ec2 describe-volumes --filters Name=tag:ServiceName,Values="$NUBIS_PROJECT" Name=tag:Environment,Values="$NUBIS_ENVIRONMENT" Name=availability-zone,Values="$AZ" | jq -r .Volumes[0].VolumeId)
+
+echo "Stopping mysqld..."
+service mysqld stop
+
+DATE=$(date +%F)
+DESCRIPTION="mysql-$NUBIS_PROJECT-$NUBIS_ENVIRONMENT-$DATE"
+
+echo "Creating snapshot of volume... $VOLUME_ID ($DESCRIPTION)"
+aws ec2 create-snapshot --volume-id "$VOLUME_ID" --description "$DESCRIPTION"
+
+echo "Starting mysqld..."
+service mysqld start
