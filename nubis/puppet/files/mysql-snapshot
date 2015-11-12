@@ -27,8 +27,9 @@ DESCRIPTION="mysql-$NUBIS_PROJECT-$NUBIS_ENVIRONMENT-$DATE"
 
 echo "Creating snapshot of volume... $VOLUME_ID ($DESCRIPTION)"
 SNAPSHOT=$(aws ec2 create-snapshot --volume-id "$VOLUME_ID" --description "$DESCRIPTION")
+SNAPSHOT_ID=$(echo "$SNAPSHOT" | jq -r .SnapshotId)
 
-
+echo "$DATE: $DESCRIPTION $SNAPSHOT_ID" >> /var/lib/mysql/nubis/SNAPSHOT
 
 echo "Starting mysqld..."
 service mysqld start
