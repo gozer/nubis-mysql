@@ -39,9 +39,8 @@ blkid /dev/xvdb || mkfs.ext4 /dev/xvdb -L "mysql-${NUBIS_PROJECT}-${NUBIS_ENVIRO
 mount /dev/xvdb -onoatime /var/lib/mysql
 rm -rf /var/lib/mysql/lost+found
 
-SERVER_ID=$(ec2-metadata --local-ipv4 | cut -d: -f2| sed -e's/[ \.]//g')
-
 REPORT_HOST=$(curl -s -fq http://169.254.169.254/latest/meta-data/local-ipv4)
+
 if [ -f /var/lib/mysql/nubis/ENI ]; then
   ENI=$(cat /var/lib/mysql/nubis/ENI)
   ENI_IP=$(aws ec2 describe-network-interfaces --network-interface-id "$ENI" | jq -r .NetworkInterfaces[0].PrivateIpAddress)
@@ -49,6 +48,8 @@ if [ -f /var/lib/mysql/nubis/ENI ]; then
   echo "Attaching ENI $ENI($ENI_IP) ..."
   aws ec2 attach-network-interface --network-interface-id "$ENI" --instance-id "$INSTANCE_ID" --device-index 1
 fi
+
+SERVER_ID=$(echo "$REPORT_HOST" | cut -d: -f2| sed -e's/[ \.]//g')
 
 echo "Generating my.cnf (server-id: $SERVER_ID) (report-host: $REPORT_HOST)..."
 
