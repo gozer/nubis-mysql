@@ -182,7 +182,7 @@ if [ -f /var/lib/mysql/nubis/svc-mysql.json ]; then
   echo "Installing MySQL Consul service..."
   ln -sf /var/lib/mysql/nubis/svc-mysql.json /etc/consul/svc-mysql.json
   echo "Reloading Consul..."
-  service consul restart
+  service consul reload
 fi
 
 if [ -f /var/lib/mysql/nubis/mysql.yaml ]; then
