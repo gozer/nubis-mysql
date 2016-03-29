@@ -39,7 +39,7 @@
     "StacksVersion": {
       "Description": "Version of the Nubis Stacks",
       "Type": "String",
-      "Default": "v1.0.0"
+      "Default": "master"
     }
   },
   "Mappings": {
@@ -623,6 +623,9 @@
           "AmiId": {
             "Ref": "AmiId"
           },
+          "ConsulToken": {
+            "Ref": "ConsulToken"
+          },
           "SSHKeyName": {
             "Ref": "SSHKeyName"
           },
@@ -681,6 +684,9 @@
           },
           "AmiId": {
             "Ref": "AmiId"
+          },
+          "ConsulToken": {
+            "Ref": "ConsulToken"
           },
           "SSHKeyName": {
             "Ref": "SSHKeyName"
