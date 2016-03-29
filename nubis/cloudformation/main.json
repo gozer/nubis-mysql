@@ -567,6 +567,7 @@
           "SSHKeyName": {
             "Ref": "SSHKeyName"
           },
+          "Purpose" : "MySQL",
           "InstanceType": {
             "Fn::FindInMap": [
               "InstanceTypeMap",
@@ -629,6 +630,7 @@
           "SSHKeyName": {
             "Ref": "SSHKeyName"
           },
+          "Purpose" : "MySQL",
           "InstanceType": {
             "Fn::FindInMap": [
               "InstanceTypeMap",
@@ -691,6 +693,7 @@
           "SSHKeyName": {
             "Ref": "SSHKeyName"
           },
+          "Purpose" : "MySQL",
           "InstanceType": {
             "Fn::FindInMap": [
               "InstanceTypeMap",
